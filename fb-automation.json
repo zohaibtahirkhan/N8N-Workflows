@@ -1,0 +1,267 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "Verification failed",
+        "options": {
+          "responseCode": 403
+        }
+      },
+      "id": "4c1e50c7-a8ff-4c73-b097-65ef77423c0a",
+      "name": "Verification Failed",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.challenge }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/plain"
+              }
+            ]
+          }
+        }
+      },
+      "id": "2c1917a7-2dc5-4e79-99de-f4db131745b4",
+      "name": "Verification Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "verified-check",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "927bdbdc-7f5e-41be-8847-8735ea3764c8",
+      "name": "Check Verification",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -320,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Simplified Facebook webhook verification\n// Log everything to debug\n\nconsole.log('=== WEBHOOK VERIFICATION DEBUG ===');\nconsole.log('Full $json:', JSON.stringify($json, null, 2));\n\n// Try different ways to access query parameters\nconst query1 = $json.query;\nconst query2 = $json.querystring;\nconst query3 = $json.params;\n\nconsole.log('query1 ($json.query):', query1);\nconsole.log('query2 ($json.querystring):', query2);\nconsole.log('query3 ($json.params):', query3);\n\n// Use whichever query object exists\nconst query = query1 || query2 || query3 || {};\n\nconst mode = query['hub.mode'];\nconst token = query['hub.verify_token'];\nconst challenge = query['hub.challenge'];\n\nconsole.log('Extracted values:', { mode, token, challenge });\n\n// Simple verification - return challenge if token matches\nif (token === 'testtest' && challenge) {\n  console.log('✅ SUCCESS: Returning challenge:', challenge);\n  return [{ json: { challenge: challenge, success: true } }];\n} else {\n  console.log('❌ FAILED: Token or challenge missing');\n  return [{ json: { error: 'Invalid verification', token, challenge, success: false } }];\n}\n"
+      },
+      "id": "b7ee7b02-b69c-4f8d-b2f5-7883a65b80a0",
+      "name": "Verification Logic",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -544,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "multipleMethods": true,
+        "path": "facebook-webhook",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "e62536b2-20fd-48df-b08d-33f746e90aaf",
+      "name": "Webhook Verification (GET)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -800,
+        176
+      ],
+      "webhookId": "fb-webhook-get"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "comment_id",
+              "value": "={{ $json.body.entry[0].changes[0].value.comment_id }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.body.entry[0].changes[0].value.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6e007e00-fa9b-4c25-8c26-e1bb785ac1a5",
+      "name": "Set Extracted Values",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        -576,
+        336
+      ]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=AIzaSyBNtROs-hid0LmwuD4Q6rHo0YLoRXurd1U",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"Write a polite and friendly one-line reply to the comment:{{ $json.body.entry[0].changes[0].value.message }} . If the message is appreciating something, say thank you in a good way. If it's a greeting like hello or hi, reply with a greeting. If it’s a question you can’t answer, ask them to DM us for details.\"\n        }\n      ]\n    }\n  ]\n}",
+        "headerParametersJson": "={\n  \"Content-Type\": \"application/json\"\n}"
+      },
+      "id": "d47fe757-f4d2-4791-9070-3c35b489bd22",
+      "name": "Generate Reply (Gemini)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        -336,
+        336
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v18.0/{{ $('Set Extracted Values').item.json.comment_id }}/comments",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "access_token",
+              "value": "=EAAUsAygOFdcBPAsuQ0GuLyk7z582C9LRrmF6wZB6F1x0BSAAijA1SkJXqwFM4BnS2ShWKkkbDPLz8Exi7iZBZCZBTQTcUcueqTwX0Mypirg4H7JIu1crNSZA0gR4ZBcZCcZAnDV2CzZByyVyV4rxmZCrLvV7OinImLwj3TiSZAawZBlvJajo13EdXhzbKShEreGLZAd0QKIuY7XgIQdWQ9FATd5yQQvFZA4VUd5klQHTRLaUoZD"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "={{ $json.candidates[0].content.parts[0].text }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "ee1419fc-4f2b-4def-92e1-c1317a5f05c7",
+      "name": "Reply to Comment1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -128,
+        336
+      ]
+    }
+  ],
+  "connections": {
+    "Check Verification": {
+      "main": [
+        [
+          {
+            "node": "Verification Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Verification Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verification Logic": {
+      "main": [
+        [
+          {
+            "node": "Check Verification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Verification (GET)": {
+      "main": [
+        [
+          {
+            "node": "Verification Logic",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Extracted Values",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Extracted Values": {
+      "main": [
+        [
+          {
+            "node": "Generate Reply (Gemini)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Reply (Gemini)": {
+      "main": [
+        [
+          {
+            "node": "Reply to Comment1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "c91ddd5875aa62c7948590f4a5100cd0fd1d53fefc18b12114b611785ffbf1f2"
+  }
+}

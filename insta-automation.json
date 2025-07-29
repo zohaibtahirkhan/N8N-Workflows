@@ -1,0 +1,196 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "multipleMethods": true,
+        "path": "3bf1869f-749f-4fb6-a124-358e2cd34fc9",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -576,
+        112
+      ],
+      "id": "bee50b71-1395-4989-b237-f617a711c9a5",
+      "name": "Webhook",
+      "webhookId": "3bf1869f-749f-4fb6-a124-358e2cd34fc9"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "eb280242-d287-44d5-8f3e-103368804c2c",
+              "leftValue": "={{ $json.query[\"hub.mode\"] }}",
+              "rightValue": "=subscribe",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "e1d7ac15-2bbf-4253-a666-16128564cdc5",
+              "leftValue": "={{ $json.query[\"hub.verify_token\"] }}",
+              "rightValue": "testtest",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -288,
+        32
+      ],
+      "id": "e34e59c8-3756-49f0-aa5d-e55f6e1373d7",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.query[\"hub.challenge\"] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "d34a2d34-340b-4651-b9e1-0694869bb45b",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "comment_id",
+              "value": "={{ $json.body.entry[0].changes[0].value.id }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.body.entry[0].changes[0].value.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c2f99982-04a0-4fa1-9bc0-4c36ce4409ea",
+      "name": "Set comment_id & text",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        -288,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=AIzaSyBNtROs-hid0LmwuD4Q6rHo0YLoRXurd1U",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"Write a polite and friendly one-line reply to the comment: {{ $json.text }}. If the message is appreciating something, say thank you in a good way. If it's a greeting like hello or hi, reply with a greeting. If it’s a question you can’t answer, ask them to DM us for details.\"\n        }\n      ]\n    }\n  ]\n}",
+        "headerParametersJson": "={\n  \"Content-Type\": \"application/json\"\n}"
+      },
+      "id": "dae18cfe-7fa6-4fb8-9148-06dde2fb46a5",
+      "name": "Generate Reply (Gemini)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "=https://graph.facebook.com/v23.0/{{ $('Webhook').item.json.body.entry[0].changes[0].value.id }}/replies?message={{ $json.candidates[0].content.parts[0].text }}&access_token=EAAUsAygOFdcBPNwBYAyIqAMWZCfHnHBt97H25FS2TZCwsq1OYa4ZAqHKRTIrgo4eEZAmJG9ZB8L4o3s1bd9tZCm4AjH3jjNgZCELTadic6HDNHvUesUjiGokNvzLcChgU766KgCOiUnZCSXN3hBqxs8AaIzRbAZCJ8t44WPZAPIZBIZCPPBMMF3ZCK8jJOxUc7ACeIsvW",
+        "options": {}
+      },
+      "id": "143d54b6-8fce-4f15-9b99-bb9b11d3ca0e",
+      "name": "Post Reply to IG",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        144,
+        240
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set comment_id & text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set comment_id & text": {
+      "main": [
+        [
+          {
+            "node": "Generate Reply (Gemini)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Reply (Gemini)": {
+      "main": [
+        [
+          {
+            "node": "Post Reply to IG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2a8f1d983431a87e349b0b97ec7ae99b0ce8d86a37c58f9858c0bb6fb801c4ec"
+  }
+}
