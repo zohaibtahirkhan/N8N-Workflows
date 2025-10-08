@@ -1,0 +1,401 @@
+{
+  "name": "email auto-reply for gmail",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -464,
+        -96
+      ],
+      "id": "487130a4-e396-457d-a678-a1bd33345e30",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Tpi5JFT5Y3w1M84D",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.text }}",
+        "categories": {
+          "categories": [
+            {
+              "category": " Sponsorship",
+              "description": " Emails that express interest in sponsoring your content, brand, event, or platform, usually involving financial offers or product promotion in exchange for visibility. "
+            },
+            {
+              "category": "Collaboration",
+              "description": " Emails proposing a joint effort, partnership, or creative project — such as content creation, co-hosting events, or shared campaigns between individuals or organizations."
+            },
+            {
+              "category": "Business Inquiries ",
+              "description": "General professional emails related to services, proposals, partnerships, or requests for information about pricing, availability, or business opportunities not clearly marked as sponsorships or collaborations."
+            },
+            {
+              "category": "Others",
+              "description": " Any email that doesn’t fall under sponsorship, collaboration, or business — such as personal messages, spam, newsletters, or generic updates."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        -256,
+        -96
+      ],
+      "id": "64b2858e-8743-45c1-aa3f-82f259751fb0",
+      "name": "Text Classifier"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Gmail Trigger').item.json.headers.from }}",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.message }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1504,
+        -64
+      ],
+      "id": "fdb583f3-0b28-453c-8e4f-3611564b16e6",
+      "name": "Send Draft Message",
+      "webhookId": "8dd0e000-17e1-444e-9037-a2ba87074536",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Tpi5JFT5Y3w1M84D",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-3.5-turbo",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        192
+      ],
+      "id": "923e0f8b-0664-4e00-8e72-3e05a1ac76f9",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "93Bkp3fIcMdrvbvK",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_1391880724905953941"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        272,
+        128
+      ],
+      "id": "8758da78-6474-4fb3-86e1-10338aa8ff7d",
+      "name": "Others",
+      "webhookId": "f7cff08d-f0bd-4ac7-abd0-899769786df6",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Tpi5JFT5Y3w1M84D",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_5967931379614005150"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        256,
+        -80
+      ],
+      "id": "9d0187a1-0711-4e10-9e07-84c6ed1c6430",
+      "name": "Business Inquiries",
+      "webhookId": "f7cff08d-f0bd-4ac7-abd0-899769786df6",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Tpi5JFT5Y3w1M84D",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_6931527613271455078"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        256,
+        -256
+      ],
+      "id": "26b59c0c-cc19-4f2e-91de-639768ea9cf1",
+      "name": "Collaboration",
+      "webhookId": "f7cff08d-f0bd-4ac7-abd0-899769786df6",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Tpi5JFT5Y3w1M84D",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_8987114455186295060"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        256,
+        -448
+      ],
+      "id": "b2847b15-4613-4f2d-896d-821a5c368cd5",
+      "name": "Sponsorship",
+      "webhookId": "f7cff08d-f0bd-4ac7-abd0-899769786df6",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Tpi5JFT5Y3w1M84D",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-3.5-turbo-instruct",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        624,
+        160
+      ],
+      "id": "442e2739-c9ca-4032-ac1b-8f80c7f8d7ff",
+      "name": "OpenRouter Chat Model1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "93Bkp3fIcMdrvbvK",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Gmail Trigger').item.json.text }}",
+        "options": {
+          "systemMessage": "You are a polite, helpful, and professional email assistant for a content creator or business representative.\n\nBased on the input category (Gmail label) and the original email content, generate a short, personalized, and professional reply in a friendly tone.\n\nThere are 4 categories:\n\n1. Sponsorship – Thank them for reaching out about sponsorship. Express appreciation and let them know you’ll review their proposal and respond with details shortly.\n\n2. Collaboration – Show interest in the collaboration, express excitement, and ask for more details or share availability for a discussion.\n\n3. Business Inquiry – Respond professionally, acknowledge the inquiry, and mention that you will get back with more information or schedule a meeting if needed.\n\n4. Others – Write a general polite acknowledgment thanking the sender and confirming that you'll respond as soon as possible.\n\nYour output must be in the following plain-text format:\nsubject: <short subject line>\nmessage:\n<email body here>\nRegards, Rabia\n\nImportant formatting rules:\n- Do not wrap the output in triple backticks or label it as code.\n- The subject line should be on a single line following \"subject: \".\n- The message body should start on the line immediately following \"message:\".\n- The email body should end with \"Regards, Rabia\" on a new line after the last sentence of the message body. **Ensure \"Regards, Rabia\" is always on a single line and is separated from the main message body by exactly one newline.**\n- Do not include personal links or social media unless explicitly mentioned.\n- Keep the message 3–4 sentences long, polite, and professional."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        576,
+        -192
+      ],
+      "id": "e18a8506-ebcd-43db-87c9-e1a9a49e3c7a",
+      "name": "Reply Generator3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $json.output;\n\nconst fullMatch = input.match(/subject:\\s*(.*?)(?:\\r?\\n|\\r)+\\s*message:(?:\\r?\\n|\\r)([\\s\\S]*)/i);\n\nlet subject = '';\nlet message = '';\n\nif (fullMatch) {\n  subject = fullMatch[1] ? fullMatch[1].trim() : '';\n  message = fullMatch[2] ? fullMatch[2].trim() : '';\n\n  // Replace double line breaks with <br><br> (paragraph spacing)\n  message = message.replace(/(?:\\r?\\n){2,}/g, '<br><br>');\n\n  // Replace single line breaks with <br>\n  message = message.replace(/(?:\\r?\\n)/g, '<br>');\n\n  // Ensure \"Regards,\" and \"Rabia\" are on separate lines\n  message = message.replace(/Regards,\\s*Rabia/g, 'Regards,<br>Rabia');\n} else {\n  console.error(\"LLM output did not match expected format.\");\n}\n\nreturn [{\n  json: {\n    subject: subject,\n    message: message\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        -192
+      ],
+      "id": "4cc30fed-4ccb-47ff-9b98-31b040c979e2",
+      "name": "Code"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "Sponsorship",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Collaboration",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Business Inquiries",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Others",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Others": {
+      "main": [
+        [
+          {
+            "node": "Reply Generator3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Business Inquiries": {
+      "main": [
+        [
+          {
+            "node": "Reply Generator3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collaboration": {
+      "main": [
+        [
+          {
+            "node": "Reply Generator3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sponsorship": {
+      "main": [
+        [
+          {
+            "node": "Reply Generator3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply Generator3": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Reply Generator3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Send Draft Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b2de42be-e99b-4c18-b71e-8f7d3358957e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2497967f5f1a2cb4be804295046ae3237deabc4c434a8431cf659e374d58a355"
+  },
+  "id": "q0lqOX349F2I3zmF",
+  "tags": []
+}

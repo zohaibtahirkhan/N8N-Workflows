@@ -1,0 +1,656 @@
+{
+  "name": "Email auto-reply for outlook",
+  "nodes": [
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Here is an incoming email:\n{{ $json.bodyPreview }}\n"
+            },
+            {
+              "content": "=#Role\nYou are an AI text processor that cleans and improves the readability of email content.\n\n#Task\nTake an incoming email and remove unnecessary HTML tags while preserving all the original content in a readable format.\n\n#Instructions\n\n- Extract the email body and remove all HTML tags.\n- Retain all text, links, and essential formatting (such as line breaks and paragraph spacing).\n- Ensure the output is structured and easy to read.\n- Do not remove or modify any part of the email content.\n\n#Rules\n\n- Do not alter the meaning or wording of the email.\n- Do not remove URLs, email addresses, or special characters.\n- Maintain line breaks to ensure readability.\n",
+              "role": "system"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -800,
+        -176
+      ],
+      "id": "1df75fc1-eaf7-4f8c-bf66-1a8340f526f3",
+      "name": "Clean e-mail",
+      "credentials": {
+        "openAiApi": {
+          "id": "lfTIBfaWQ9OYWUVe",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.message.content }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "Sponsorship",
+              "description": " Emails that express interest in sponsoring your content, brand, event, or platform, usually involving financial offers or product promotion in exchange for visibility. "
+            },
+            {
+              "category": "Collaboration",
+              "description": " Emails proposing a joint effort, partnership, or creative project — such as content creation, co-hosting events, or shared campaigns between individuals or organizations."
+            },
+            {
+              "category": "Business Inquiries",
+              "description": "General professional emails related to services, proposals, partnerships, or requests for information about pricing, availability, or business opportunities not clearly marked as sponsorships or collaborations."
+            },
+            {
+              "category": "Others",
+              "description": " Any email that doesn’t fall under sponsorship, collaboration, or business — such as personal messages, spam, newsletters, or generic updates."
+            }
+          ]
+        },
+        "options": {
+          "systemPromptTemplate": "Please classify the text provided by the user into one of the following categories: {categories}, and use the provided formatting instructions below. Don't explain, and only output the json."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1,
+      "position": [
+        -576,
+        224
+      ],
+      "id": "363deb74-09c6-4033-93a6-e4dd9cdf3410",
+      "name": "Text Classifier"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -528,
+        544
+      ],
+      "id": "e458204c-2a90-48bd-91af-13946a14c147",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "lfTIBfaWQ9OYWUVe",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "move",
+        "messageId": {
+          "__rl": true,
+          "value": "={{ $('Microsoft Outlook Trigger').item.json.id }}",
+          "mode": "id"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "AQMkADAwATM0MDAAMi05M2E5LWI2ZWEtMDACLTAwCgAuAAADUGz_T876qUqOY8Ni3W2rJwEAzizDUDxAAE_1qCnhvttLpQAAAAKPiFYAAAA=",
+          "mode": "list",
+          "cachedResultName": "Sponsorship",
+          "cachedResultUrl": "https://outlook.office365.com/mail/AQMkADAwATM0MDAAMi05M2E5LWI2ZWEtMDACLTAwCgAuAAADUGz_T876qUqOY8Ni3W2rJwEAzizDUDxAAE_1qCnhvttLpQAAAAKPiFYAAAA%3D"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        -48
+      ],
+      "id": "fd021e3a-0071-4f7b-8d5e-c3c9aa278a4a",
+      "name": "Sposorship Folder",
+      "webhookId": "c77afaa5-93ba-4a72-9fbb-27e2a2d70dda",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "fPpeIuSi7WcEQ0E5",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "move",
+        "messageId": {
+          "__rl": true,
+          "value": "={{ $('Microsoft Outlook Trigger').item.json.id }}",
+          "mode": "id"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "AQMkADAwATM0MDAAMi05M2E5LWI2ZWEtMDACLTAwCgAuAAADUGz_T876qUqOY8Ni3W2rJwEAzizDUDxAAE_1qCnhvttLpQAAAAKPiFcAAAA=",
+          "mode": "list",
+          "cachedResultName": "Collaboration",
+          "cachedResultUrl": "https://outlook.office365.com/mail/AQMkADAwATM0MDAAMi05M2E5LWI2ZWEtMDACLTAwCgAuAAADUGz_T876qUqOY8Ni3W2rJwEAzizDUDxAAE_1qCnhvttLpQAAAAKPiFcAAAA%3D"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        32,
+        240
+      ],
+      "id": "1f9086d5-20fd-4184-bbdb-f0d50a349f8f",
+      "name": "Collaboration Folder",
+      "webhookId": "c77afaa5-93ba-4a72-9fbb-27e2a2d70dda",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "fPpeIuSi7WcEQ0E5",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "move",
+        "messageId": {
+          "__rl": true,
+          "value": "={{ $('Microsoft Outlook Trigger').item.json.id }}",
+          "mode": "id"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "AQMkADAwATM0MDAAMi05M2E5LWI2ZWEtMDACLTAwCgAuAAADUGz_T876qUqOY8Ni3W2rJwEAzizDUDxAAE_1qCnhvttLpQAAAAKPiFgAAAA=",
+          "mode": "list",
+          "cachedResultName": "Business Inquiries",
+          "cachedResultUrl": "https://outlook.office365.com/mail/AQMkADAwATM0MDAAMi05M2E5LWI2ZWEtMDACLTAwCgAuAAADUGz_T876qUqOY8Ni3W2rJwEAzizDUDxAAE_1qCnhvttLpQAAAAKPiFgAAAA%3D"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        176,
+        496
+      ],
+      "id": "96b3e318-2a9b-4860-bb9d-a9d34c311aa7",
+      "name": "Business Inquiries folder",
+      "webhookId": "c77afaa5-93ba-4a72-9fbb-27e2a2d70dda",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "fPpeIuSi7WcEQ0E5",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "move",
+        "messageId": {
+          "__rl": true,
+          "value": "={{ $('Microsoft Outlook Trigger').item.json.id }}",
+          "mode": "id"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "AQMkADAwATM0MDAAMi05M2E5LWI2ZWEtMDACLTAwCgAuAAADUGz_T876qUqOY8Ni3W2rJwEAzizDUDxAAE_1qCnhvttLpQAAAAKPiFkAAAA=",
+          "mode": "list",
+          "cachedResultName": "Others",
+          "cachedResultUrl": "https://outlook.office365.com/mail/AQMkADAwATM0MDAAMi05M2E5LWI2ZWEtMDACLTAwCgAuAAADUGz_T876qUqOY8Ni3W2rJwEAzizDUDxAAE_1qCnhvttLpQAAAAKPiFkAAAA%3D"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        208,
+        736
+      ],
+      "id": "89283945-cb44-41b4-981d-8c98cfae546a",
+      "name": "Others folder",
+      "webhookId": "c77afaa5-93ba-4a72-9fbb-27e2a2d70dda",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "fPpeIuSi7WcEQ0E5",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=#Role\nYou are a professional assistant representing a brand open to sponsorship proposals.\n\n#Task\nRespond to sponsorship requests by thanking the sender, requesting relevant details, and expressing willingness to review their offer.\n\n#Instructions\n- Read the email content: {{ $('Text Classifier').item.json.message.content }}.\n- Thank the sender for their interest in a sponsorship.\n- Ask for additional details such as platform/audience size, sponsorship type, and timeline.\n- Keep the tone friendly, professional, and open to discussion.\n\n#Output Parameters\nSubject: A polite, clear subject acknowledging the sponsorship inquiry.\nMessage: A professional reply asking for more details and showing interest.\n\nBest regards,  \nRabia\n",
+              "role": "system"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "id": "ced70d90-8764-41e6-ad51-2ae1295850d4",
+      "name": "Sponsorship Draft",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.5,
+      "position": [
+        112,
+        -80
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "lfTIBfaWQ9OYWUVe",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=#Role\nYou are an assistant managing collaboration requests for a growing brand or creator.\n\n#Task\nRespond to collaboration emails by acknowledging the proposal and asking for more specifics to evaluate the opportunity.\n\n#Instructions\n- Read the email content: {{ $('Text Classifier').item.json.message.content }}.\n- Thank the sender and express interest in the collaboration idea.\n- Ask for details like the collaboration format, target audience, mutual goals, and proposed timeline.\n- Maintain a warm and engaging tone while staying professional.\n\n#Output Parameters\nSubject: A clear subject line expressing interest in collaboration.\nMessage: A thoughtful reply requesting more details and proposing next steps.\nEnd the mail with the following\nBest regards,  \nRabia\n",
+              "role": "system"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "id": "4c04fc93-9567-435b-a48b-fff822f4e088",
+      "name": "Collaboration Draft",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.5,
+      "position": [
+        304,
+        240
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "lfTIBfaWQ9OYWUVe",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=#Role\nYou are a polite assistant managing miscellaneous or unclassified emails.\n\n#Task\nAcknowledge and respond to emails that don’t fall into a specific category.\n\n#Instructions\n- Read the email content: {{ $('Text Classifier').item.json.message.content }}.\n- Thank the sender for reaching out.\n- Provide a neutral, courteous response.\n- If the message is unclear or irrelevant, respond politely or redirect them if appropriate.\n\n#Output Parameters\nSubject: A general subject that suits miscellaneous messages.\nMessage: A neutral, respectful reply appropriate for uncertain or general content.\n\nBest regards,  \nRabia\n",
+              "role": "system"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "id": "0312fa99-ef14-4117-b5b0-da4259916e20",
+      "name": "Business Inquiries Draft",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.5,
+      "position": [
+        480,
+        512
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "lfTIBfaWQ9OYWUVe",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=",
+              "role": "system"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "id": "f373cc81-6f08-4569-9d55-478a0e2b3536",
+      "name": "Others Draft",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.5,
+      "position": [
+        656,
+        736
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "lfTIBfaWQ9OYWUVe",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1024,
+        240
+      ],
+      "id": "647bf42b-4386-42be-a9d8-d000b30fa3a6",
+      "name": "Microsoft Outlook Trigger",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "fPpeIuSi7WcEQ0E5",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ $('Microsoft Outlook Trigger').item.json.from }}",
+        "subject": "={{ $json.message.content.Subject }}",
+        "bodyContent": "={{ $json.message.content.Message }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        928,
+        304
+      ],
+      "id": "e3a310bd-6111-4335-b75c-66649e7304d0",
+      "name": "Collaboration",
+      "webhookId": "e9028ae6-b8a4-4361-9526-a6309ed71f2b",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "fPpeIuSi7WcEQ0E5",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ $('Microsoft Outlook Trigger').item.json.from }}",
+        "subject": "={{ $json.message.content.Subject }}",
+        "bodyContent": "={{ $json.message.content.Message }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        544,
+        0
+      ],
+      "id": "2aaea8c0-2ceb-42a7-a2de-124797c1d4d6",
+      "name": "Sponsorship",
+      "webhookId": "e9028ae6-b8a4-4361-9526-a6309ed71f2b",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "fPpeIuSi7WcEQ0E5",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ $('Microsoft Outlook Trigger').item.json.from }}",
+        "subject": "={{ $json.message.content.Subject }}",
+        "bodyContent": "={{ $json.message.content.Message }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        544
+      ],
+      "id": "31d59bc8-f3c1-48ec-bb90-48202a1b46f5",
+      "name": "Business Inquiries",
+      "webhookId": "e9028ae6-b8a4-4361-9526-a6309ed71f2b",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "fPpeIuSi7WcEQ0E5",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ $('Microsoft Outlook Trigger').item.json.from }}",
+        "subject": "={{ $json.message.content.Subject }}",
+        "bodyContent": "={{ $json.message.content.Message }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        1328,
+        752
+      ],
+      "id": "5c8b4037-6c1a-48d4-99df-0321e8dcb12a",
+      "name": "Others",
+      "webhookId": "e9028ae6-b8a4-4361-9526-a6309ed71f2b",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "fPpeIuSi7WcEQ0E5",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Clean e-mail": {
+      "main": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "Sposorship Folder",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Collaboration Folder",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Business Inquiries folder",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Others folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sposorship Folder": {
+      "main": [
+        [
+          {
+            "node": "Sponsorship Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collaboration Folder": {
+      "main": [
+        [
+          {
+            "node": "Collaboration Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Business Inquiries folder": {
+      "main": [
+        [
+          {
+            "node": "Business Inquiries Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Others folder": {
+      "main": [
+        [
+          {
+            "node": "Others Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sponsorship Draft": {
+      "main": [
+        [
+          {
+            "node": "Sponsorship",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collaboration Draft": {
+      "main": [
+        [
+          {
+            "node": "Collaboration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Business Inquiries Draft": {
+      "main": [
+        [
+          {
+            "node": "Business Inquiries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Others Draft": {
+      "main": [
+        [
+          {
+            "node": "Others",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microsoft Outlook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Clean e-mail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collaboration": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "edfd5e0c-847a-494e-8d1c-a5787c3f5836",
+  "meta": {
+    "instanceId": "2497967f5f1a2cb4be804295046ae3237deabc4c434a8431cf659e374d58a355"
+  },
+  "id": "z15xcrQVKpHUhcG8",
+  "tags": []
+}
