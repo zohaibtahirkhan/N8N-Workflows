@@ -134,7 +134,7 @@
     {
       "parameters": {
         "requestMethod": "POST",
-        "url": "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=AIzaSyBNtROs-hid0LmwuD4Q6rHo0YLoRXurd1U",
+        "url": "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=Add-Key-Here",
         "jsonParameters": true,
         "options": {},
         "bodyParametersJson": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"Write a polite and friendly one-line reply to the comment:{{ $json.body.entry[0].changes[0].value.message }} . If the message is appreciating something, say thank you in a good way. If it's a greeting like hello or hi, reply with a greeting. If it’s a question you can’t answer, ask them to DM us for details.\"\n        }\n      ]\n    }\n  ]\n}",
